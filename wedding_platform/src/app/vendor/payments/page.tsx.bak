@@ -1,0 +1,1353 @@
+'use client';
+
+import { useState, useEffect, Fragment } from 'react';
+import { FiDollarSign, FiDownload, FiFilter, FiPlus, FiSearch, FiTrendingUp, FiCreditCard, FiClock, FiCheck, FiX, FiAlertCircle, FiInfo, FiChevronLeft, FiChevronRight, FiGlobe } from 'react-icons/fi';
+import { Dialog, Transition } from '@headlessui/react';
+import { Line, Bar } from 'react-chartjs-2';
+import { format, subMonths, formatDistanceToNow } from 'date-fns';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+// Mock data
+const mockTransactions = [
+  {
+    id: '1',
+    date: '2023-10-15T14:30:00Z',
+    type: 'payout',
+    amount: 1250.00,
+    status: 'completed',
+    reference: 'PY-789012',
+    method: 'bank_transfer',
+    account: '•••• 5678',
+  },
+  {
+    id: '2',
+    date: '2023-10-10T11:15:00Z',
+    type: 'booking',
+    amount: 850.00,
+    status: 'completed',
+    reference: 'BK-456789',
+    client: 'Alex Johnson',
+    service: 'Wedding Photography',
+  },
+  {
+    id: '3',
+    date: '2023-10-05T09:45:00Z',
+    type: 'booking',
+    amount: 450.00,
+    status: 'completed',
+    reference: 'BK-456788',
+    client: 'Sarah Williams',
+    service: 'Engagement Shoot',
+  },
+  {
+    id: '4',
+    date: '2023-10-01T16:20:00Z',
+    type: 'refund',
+    amount: -150.00,
+    status: 'completed',
+    reference: 'RF-123456',
+    reason: 'Cancellation',
+    bookingRef: 'BK-456787',
+  },
+  {
+    id: '5',
+    date: '2023-09-28T13:10:00Z',
+    type: 'payout',
+    amount: 980.50,
+    status: 'completed',
+    reference: 'PY-789011',
+    method: 'bank_transfer',
+    account: '•••• 5678',
+  },
+  {
+    id: '6',
+    date: '2023-09-25T10:30:00Z',
+    type: 'booking',
+    amount: 650.00,
+    status: 'pending',
+    reference: 'BK-456786',
+    client: 'Michael Brown',
+    service: 'Family Portraits',
+  },
+  {
+    id: '7',
+    date: '2023-09-20T14:15:00Z',
+    type: 'adjustment',
+    amount: 50.00,
+    status: 'completed',
+    reference: 'AD-789012',
+    description: 'Overtime charge',
+    bookingRef: 'BK-456785',
+  },
+];
+
+const mockPayoutMethods = [
+  {
+    id: '1',
+    type: 'bank',
+    bankName: 'Chase',
+    accountType: 'checking',
+    accountNumber: '•••• 5678',
+    routingNumber: '•••••1234',
+    isPrimary: true,
+    addedOn: '2023-01-15T10:30:00Z',
+  },
+  {
+    id: '2',
+    type: 'paypal',
+    email: 'vendor@example.com',
+    isPrimary: false,
+    addedOn: '2022-11-05T14:20:00Z',
+  },
+];
+
+const mockPayoutSchedule = {
+  frequency: 'weekly',
+  nextPayout: '2023-11-01T00:00:00Z',
+  minimumPayout: 100.00,
+  account: '•••• 5678',
+};
+
+const mockEarnings = {
+  available: 1250.75,
+  pending: 350.00,
+  lifetime: 24500.50,
+  thisMonth: 3250.25,
+  lastMonth: 2980.75,
+};
+
+export default function VendorPayments() {
+  const [transactions, setTransactions] = useState(mockTransactions);
+  const [payoutMethods, setPayoutMethods] = useState(mockPayoutMethods);
+  const [payoutSchedule, setPayoutSchedule] = useState(mockPayoutSchedule);
+  const [earnings, setEarnings] = useState(mockEarnings);
+  const [timeRange, setTimeRange] = useState('30days');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Filter transactions based on search query
+  const filteredTransactions = transactions.filter(transaction => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      transaction.reference.toLowerCase().includes(searchLower) ||
+      (transaction.client && transaction.client.toLowerCase().includes(searchLower)) ||
+      (transaction.service && transaction.service.toLowerCase().includes(searchLower)) ||
+      transaction.amount.toString().includes(searchLower)
+    );
+  });
+
+  // Handle payout request
+  const handleRequestPayout = (e) => {
+    e.preventDefault();
+    if (!payoutAmount || isNaN(payoutAmount) || parseFloat(payoutAmount) <= 0) return;
+    
+    setIsLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      const amount = parseFloat(payoutAmount);
+      const newTransaction = {
+        id: `PY-${Date.now()}`,
+        date: new Date().toISOString(),
+        type: 'payout',
+        amount: -amount,
+        status: 'pending',
+        reference: `PY-${Math.floor(100000 + Math.random() * 900000)}`,
+        method: 'bank_transfer',
+        account: '•••• 5678',
+      };
+      
+      setTransactions([newTransaction, ...transactions]);
+      setEarnings(prev => ({
+        ...prev,
+        available: Math.max(0, prev.available - amount),
+      }));
+      
+      setPayoutAmount('');
+      setIsPayoutModalOpen(false);
+      setIsLoading(false);
+    }, 1500);
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  // Get status badge
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      completed: 'bg-green-100 text-green-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      failed: 'bg-red-100 text-red-800',
+      processing: 'bg-blue-100 text-blue-800',
+    };
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMap[status] || 'bg-gray-100 text-gray-800'}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  };
+
+  // Get transaction icon
+  const getTransactionIcon = (type) => {
+    switch (type) {
+      case 'payout':
+        return <FiDownload className="w-5 h-5 text-indigo-600" />;
+      case 'booking':
+        return <FiDollarSign className="w-5 h-5 text-green-600" />;
+      case 'refund':
+        return <FiArrowUp className="w-5 h-5 text-red-600" />;
+      case 'adjustment':
+        return <FiRefreshCw className="w-5 h-5 text-blue-600" />;
+      default:
+        return <FiDollarSign className="w-5 h-5 text-gray-600" />;
+    }
+  };
+
+  // Chart data for earnings
+  const earningsChartData = {
+    labels: Array.from({ length: 12 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - (11 - i));
+      return format(date, 'MMM');
+    }),
+    datasets: [
+      {
+        label: 'Earnings',
+        data: [1850, 2100, 1980, 2340, 2760, 2540, 2870, 3120, 2980, 3250, 0, 0],
+        borderColor: 'rgb(99, 102, 241)',
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        tension: 0.3,
+        fill: true,
+      },
+    ],
+  };
+
+  const earningsChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            return `Earnings: ${formatCurrency(context.raw)}`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: (value) => formatCurrency(value),
+        },
+      },
+    },
+  };
+
+  // Chart data for transactions
+  const transactionsChartData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [
+      {
+        label: 'Bookings',
+        data: [3, 5, 2, 6, 4, 8, 3],
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderRadius: 4,
+      },
+      {
+        label: 'Payouts',
+        data: [1, 2, 1, 3, 2, 0, 1],
+        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const transactionsChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            return `${context.dataset.label}: ${context.raw}`;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+        },
+      },
+    },
+  };
+
+  // Tabs
+  const tabs = [
+    { name: 'Overview', id: 'overview' },
+    { name: 'Transactions', id: 'transactions' },
+    { name: 'Payouts', id: 'payouts' },
+    { name: 'Tax Documents', id: 'tax' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="pb-5 border-b border-gray-200">
+        <h1 className="text-2xl font-semibold text-gray-900">Payments</h1>
+        <p className="mt-1 text-sm text-gray-600">
+          Manage your earnings, payouts, and financial settings.
+        </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="flex -mb-px space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab.id
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 p-3 rounded-md bg-indigo-100">
+                  <FiDollarSign className="w-6 h-6 text-indigo-600" />
+                </div>
+                <div className="ml-5">
+                  <p className="text-sm font-medium text-gray-500">Available Balance</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {formatCurrency(earnings.available)}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={() => setIsPayoutModalOpen(true)}
+                  disabled={earnings.available <= 0}
+                  className={`w-full px-4 py-2 text-sm font-medium text-white ${
+                    earnings.available > 0
+                      ? 'bg-indigo-600 hover:bg-indigo-700'
+                      : 'bg-gray-400 cursor-not-allowed'
+                  } border border-transparent rounded-md shadow-sm`}
+                >
+                  Request Payout
+                </button>
+              </div>
+            </div>
+
+            <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 p-3 rounded-md bg-green-100">
+                  <FiTrendingUp className="w-6 h-6 text-green-600" />
+                </div>
+                <div className="ml-5">
+                  <p className="text-sm font-medium text-gray-500">This Month</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {formatCurrency(earnings.thisMonth)}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {earnings.thisMonth > earnings.lastMonth ? (
+                      <span className="text-green-600">
+                        +{((earnings.thisMonth - earnings.lastMonth) / earnings.lastMonth * 100).toFixed(1)}% from last month
+                      </span>
+                    ) : (
+                      <span className="text-red-600">
+                        -{((earnings.lastMonth - earnings.thisMonth) / earnings.lastMonth * 100).toFixed(1)}% from last month
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 p-3 rounded-md bg-yellow-100">
+                  <FiClock className="w-6 h-6 text-yellow-600" />
+                </div>
+                <div className="ml-5">
+                  <p className="text-sm font-medium text-gray-500">Pending Clearance</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {formatCurrency(earnings.pending)}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Clears in 2-3 business days
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 p-3 rounded-md bg-purple-100">
+                  <FiCreditCard className="w-6 h-6 text-purple-600" />
+                </div>
+                <div className="ml-5">
+                  <p className="text-sm font-medium text-gray-500">Lifetime Earnings</p>
+                  <p className="text-2xl font-semibold text-gray-900">
+                    {formatCurrency(earnings.lifetime)}
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Since {new Date().getFullYear() - 2}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Charts */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium text-gray-900">Earnings Overview</h3>
+              <p className="mt-1 text-sm text-gray-500">Last 12 months</p>
+              <div className="mt-4 h-64">
+                <Line data={earningsChartData} options={earningsChartOptions} />
+              </div>
+            </div>
+
+            <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium text-gray-900">Weekly Activity</h3>
+              <p className="mt-1 text-sm text-gray-500">This week</p>
+              <div className="mt-4 h-64">
+                <Bar data={transactionsChartData} options={transactionsChartOptions} />
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Transactions */}
+          <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Recent Transactions</h3>
+              <button
+                onClick={() => setActiveTab('transactions')}
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                View all
+              </button>
+            </div>
+            
+            <div className="overflow-hidden border border-gray-200 rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                      Transaction
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                      Date
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
+                      Amount
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {transactions.slice(0, 5).map((transaction) => (
+                    <tr 
+                      key={transaction.id}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => setSelectedTransaction(transaction)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            {getTransactionIcon(transaction.type)}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {transaction.type === 'booking' && `Booking: ${transaction.reference}`}
+                              {transaction.type === 'payout' && `Payout: ${transaction.reference}`}
+                              {transaction.type === 'refund' && `Refund: ${transaction.reference}`}
+                              {transaction.type === 'adjustment' && `Adjustment: ${transaction.reference}`}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {transaction.client || transaction.service || transaction.method}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {format(new Date(transaction.date), 'MMM d, yyyy')}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {format(new Date(transaction.date), 'h:mm a')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                        <span className={transaction.amount < 0 ? 'text-red-600' : 'text-green-600'}>
+                          {transaction.amount < 0 ? '-' : ''}{formatCurrency(Math.abs(transaction.amount))}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right whitespace-nowrap">
+                        {getStatusBadge(transaction.status)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transactions Tab */}
+      {activeTab === 'transactions' && (
+        <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+          <div className="flex flex-col justify-between mb-6 space-y-4 sm:flex-row sm:items-center sm:space-y-0">
+            <div className="relative flex-1 max-w-md">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <FiSearch className="w-5 h-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                className="block w-full py-2 pl-10 pr-3 text-sm bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Search transactions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex space-x-3">
+              <div className="relative">
+                <select
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value)}
+                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                  <option value="7days">Last 7 days</option>
+                  <option value="30days">Last 30 days</option>
+                  <option value="90days">Last 90 days</option>
+                  <option value="year">This year</option>
+                  <option value="all">All time</option>
+                </select>
+              </div>
+              <button
+                type="button"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <FiFilter className="w-4 h-4 mr-2 text-gray-400" />
+                Filter
+              </button>
+              <button
+                type="button"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <FiDownload className="w-4 h-4 mr-2" />
+                Export
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-hidden border border-gray-200 rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                    Transaction
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                    Date
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
+                    Amount
+                  </th>
+                  <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredTransactions.length > 0 ? (
+                  filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id}
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => setSelectedTransaction(transaction)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            {getTransactionIcon(transaction.type)}
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {transaction.type === 'booking' && `Booking: ${transaction.reference}`}
+                              {transaction.type === 'payout' && `Payout: ${transaction.reference}`}
+                              {transaction.type === 'refund' && `Refund: ${transaction.reference}`}
+                              {transaction.type === 'adjustment' && `Adjustment: ${transaction.reference}`}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {transaction.client || transaction.service || transaction.method}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {format(new Date(transaction.date), 'MMM d, yyyy')}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {format(new Date(transaction.date), 'h:mm a')}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                        <span className={transaction.amount < 0 ? 'text-red-600' : 'text-green-600'}>
+                          {transaction.amount < 0 ? '-' : ''}{formatCurrency(Math.abs(transaction.amount))}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-right whitespace-nowrap">
+                        {getStatusBadge(transaction.status)}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-4 text-sm text-center text-gray-500">
+                      No transactions found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-6 py-3 bg-gray-50">
+            <div className="flex justify-between flex-1 sm:hidden">
+              <a
+                href="#"
+                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Previous
+              </a>
+              <a
+                href="#"
+                className="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Next
+              </a>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing <span className="font-medium">1</span> to <span className="font-medium">10</span> of{' '}
+                  <span className="font-medium">20</span> results
+                </p>
+              </div>
+              <div>
+                <nav className="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <a
+                    href="#"
+                    className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50"
+                  >
+                    <span className="sr-only">Previous</span>
+                    <FiChevronLeft className="w-5 h-5" aria-hidden="true" />
+                  </a>
+                  <a
+                    href="#"
+                    aria-current="page"
+                    className="relative z-10 inline-flex items-center px-4 py-2 text-sm font-medium text-indigo-600 border border-indigo-500 bg-indigo-50"
+                  >
+                    1
+                  </a>
+                  <a
+                    href="#"
+                    className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                  >
+                    2
+                  </a>
+                  <a
+                    href="#"
+                    className="relative items-center hidden px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 md:inline-flex"
+                  >
+                    3
+                  </a>
+                  <span className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300">
+                    ...
+                  </span>
+                  <a
+                    href="#"
+                    className="relative items-center hidden px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 md:inline-flex"
+                  >
+                    8
+                  </a>
+                  <a
+                    href="#"
+                    className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50"
+                  >
+                    <span className="sr-only">Next</span>
+                    <FiChevronRight className="w-5 h-5" aria-hidden="true" />
+                  </a>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payouts Tab */}
+      {activeTab === 'payouts' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm lg:col-span-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">Payout Methods</h3>
+                <button
+                  type="button"
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 border border-transparent rounded-md hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <FiPlus className="w-4 h-4 mr-1" />
+                  Add Method
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-4">
+                {payoutMethods.map((method) => (
+                  <div
+                    key={method.id}
+                    className={`p-4 border rounded-lg ${
+                      method.isPrimary ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          {method.type === 'bank' ? (
+                            <div className="flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full">
+                              <FiCreditCard className="w-5 h-5 text-indigo-600" />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
+                              <FiGlobe className="w-5 h-5 text-blue-600" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          <div className="flex items-center">
+                            <h4 className="text-sm font-medium text-gray-900">
+                              {method.type === 'bank'
+                                ? `${method.bankName} •••• ${method.accountNumber}`
+                                : `PayPal • ${method.email}`}
+                            </h4>
+                            {method.isPrimary && (
+                              <span className="inline-flex items-center px-2 py-0.5 ml-2 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                                Primary
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex mt-1 space-x-2 text-xs text-gray-500">
+                            <span>{method.type === 'bank' ? 'Bank Account' : 'PayPal'}</span>
+                            {method.type === 'bank' && (
+                              <span>Added on {format(new Date(method.addedOn), 'MMM d, yyyy')}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        {!method.isPrimary && (
+                          <button
+                            type="button"
+                            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                          >
+                            Set as Primary
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="text-sm font-medium text-red-600 hover:text-red-500"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+              <h3 className="text-lg font-medium text-gray-900">Payout Schedule</h3>
+              <div className="mt-4 space-y-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Payout Method</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {payoutSchedule.account}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Schedule</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {payoutSchedule.frequency === 'weekly' ? 'Weekly on Monday' : 'Monthly on the 1st'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Next Payout</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {format(new Date(payoutSchedule.nextPayout), 'MMM d, yyyy')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Minimum Payout</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {formatCurrency(payoutSchedule.minimumPayout)}
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    className="w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Request Payout Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <h3 className="text-lg font-medium text-gray-900">Payout History</h3>
+            <div className="mt-4 overflow-hidden border border-gray-200 rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                      Payout
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                      Date
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
+                      Amount
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {transactions
+                    .filter(t => t.type === 'payout')
+                    .map((transaction) => (
+                      <tr 
+                        key={transaction.id}
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => setSelectedTransaction(transaction)}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {transaction.reference}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {transaction.method === 'bank_transfer' ? 'Bank Transfer' : 'PayPal'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {format(new Date(transaction.date), 'MMM d, yyyy')}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                          <span className="text-red-600">
+                            -{formatCurrency(Math.abs(transaction.amount))}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-right whitespace-nowrap">
+                          {getStatusBadge(transaction.status)}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tax Documents Tab */}
+      {activeTab === 'tax' && (
+        <div className="p-5 bg-white border border-gray-200 rounded-lg shadow-sm">
+          <h3 className="text-lg font-medium text-gray-900">Tax Documents</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Download your tax documents for the previous years.
+          </p>
+
+          <div className="mt-6 border-t border-gray-200">
+            <div className="divide-y divide-gray-200">
+              {[2023, 2022, 2021].map((year) => (
+                <div key={year} className="flex items-center justify-between py-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900">
+                      {year} Tax Documents
+                    </h4>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Available documents for the {year} tax year
+                    </p>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      <FiDownload className="w-4 h-4 mr-1" />
+                      Download 1099
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      <FiDownload className="w-4 h-4 mr-1" />
+                      Download Summary
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <h4 className="text-sm font-medium text-gray-900">Tax Information</h4>
+            <p className="mt-1 text-sm text-gray-500">
+              Ensure your tax information is up to date to receive accurate tax documents.
+            </p>
+            <div className="mt-4">
+              <button
+                type="button"
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Update Tax Information
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payout Modal */}
+      <Transition.Root show={isPayoutModalOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="fixed inset-0 z-10 overflow-y-auto"
+          onClose={() => setIsPayoutModalOpen(false)}
+        >
+          <div className="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Dialog.Overlay className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" />
+            </Transition.Child>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <div className="inline-block w-full px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                      Request Payout
+                    </Dialog.Title>
+                    <button
+                      type="button"
+                      className="text-gray-400 bg-white rounded-md hover:text-gray-500 focus:outline-none"
+                      onClick={() => setIsPayoutModalOpen(false)}
+                    >
+                      <span className="sr-only">Close</span>
+                      <FiX className="w-6 h-6" aria-hidden="true" />
+                    </button>
+                  </div>
+                  <div className="mt-4">
+                    <div className="p-4 bg-indigo-50 rounded-lg">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <FiInfo className="w-5 h-5 text-indigo-400" aria-hidden="true" />
+                        </div>
+                        <div className="ml-3">
+                          <h3 className="text-sm font-medium text-indigo-800">Available Balance</h3>
+                          <div className="mt-2 text-sm text-indigo-700">
+                            <p>You can request a payout of up to {formatCurrency(earnings.available)}.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <form onSubmit={handleRequestPayout} className="mt-6">
+                      <div>
+                        <label htmlFor="payoutAmount" className="block text-sm font-medium text-gray-700">
+                          Amount to Withdraw
+                        </label>
+                        <div className="relative mt-1 rounded-md shadow-sm">
+                          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span className="text-gray-500 sm:text-sm">$</span>
+                          </div>
+                          <input
+                            type="number"
+                            name="payoutAmount"
+                            id="payoutAmount"
+                            className="block w-full pr-12 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 pl-7 sm:text-sm"
+                            placeholder="0.00"
+                            value={payoutAmount}
+                            onChange={(e) => setPayoutAmount(e.target.value)}
+                            min="1"
+                            max={earnings.available}
+                            step="0.01"
+                            required
+                          />
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <span className="text-gray-500 sm:text-sm" id="price-currency">
+                              USD
+                            </span>
+                          </div>
+                        </div>
+                        <p className="mt-1 text-sm text-gray-500">
+                          Maximum: {formatCurrency(earnings.available)}
+                        </p>
+                      </div>
+
+                      <div className="mt-4">
+                        <label htmlFor="payoutMethod" className="block text-sm font-medium text-gray-700">
+                          Payout Method
+                        </label>
+                        <select
+                          id="payoutMethod"
+                          name="payoutMethod"
+                          className="block w-full py-2 pl-3 pr-10 mt-1 text-base border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          defaultValue="bank-1"
+                        >
+                          {payoutMethods.map((method) => (
+                            <option key={method.id} value={`${method.type}-${method.id}`}>
+                              {method.type === 'bank'
+                                ? `${method.bankName} •••• ${method.accountNumber}${method.isPrimary ? ' (Primary)' : ''}`
+                                : `PayPal • ${method.email}${method.isPrimary ? ' (Primary)' : ''}`}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="mt-6">
+                        <h4 className="text-sm font-medium text-gray-700">Payout Details</h4>
+                        <dl className="mt-2 border-t border-b border-gray-200 divide-y divide-gray-200">
+                          <div className="flex justify-between py-3 text-sm font-medium">
+                            <dt className="text-gray-500">Amount</dt>
+                            <dd className="text-gray-900">
+                              {payoutAmount ? formatCurrency(parseFloat(payoutAmount)) : '$0.00'}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between py-3 text-sm font-medium">
+                            <dt className="text-gray-500">Processing Fee</dt>
+                            <dd className="text-gray-900">$0.00</dd>
+                          </div>
+                          <div className="flex justify-between py-3 text-sm font-medium">
+                            <dt className="text-gray-900">Total</dt>
+                            <dd className="text-indigo-600">
+                              {payoutAmount ? formatCurrency(parseFloat(payoutAmount)) : '$0.00'}
+                            </dd>
+                          </div>
+                        </dl>
+                      </div>
+
+                      <div className="mt-6">
+                        <p className="text-xs text-gray-500">
+                          Payouts typically take 3-5 business days to process and appear in your account.
+                        </p>
+                      </div>
+
+                      <div className="mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                        <button
+                          type="submit"
+                          disabled={!payoutAmount || parseFloat(payoutAmount) <= 0 || isLoading}
+                          className={`w-full px-4 py-2 text-base font-medium text-white border border-transparent rounded-md shadow-sm ${
+                            !payoutAmount || parseFloat(payoutAmount) <= 0 || isLoading
+                              ? 'bg-indigo-300 cursor-not-allowed'
+                              : 'bg-indigo-600 hover:bg-indigo-700'
+                          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm`}
+                        >
+                          {isLoading ? 'Processing...' : 'Request Payout'}
+                        </button>
+                        <button
+                          type="button"
+                          className="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                          onClick={() => setIsPayoutModalOpen(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition.Root>
+
+      {/* Transaction Details Modal */}
+      <Transition.Root show={!!selectedTransaction} as={Fragment}>
+        <Dialog
+          as="div"
+          className="fixed inset-0 z-10 overflow-y-auto"
+          onClose={() => setSelectedTransaction(null)}
+        >
+          <div className="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Dialog.Overlay className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" />
+            </Transition.Child>
+
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <div className="inline-block w-full px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                {selectedTransaction && (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                        Transaction Details
+                      </Dialog.Title>
+                      <button
+                        type="button"
+                        className="text-gray-400 bg-white rounded-md hover:text-gray-500 focus:outline-none"
+                        onClick={() => setSelectedTransaction(null)}
+                      >
+                        <span className="sr-only">Close</span>
+                        <FiX className="w-6 h-6" aria-hidden="true" />
+                      </button>
+                    </div>
+
+                    <div className="mt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 p-3 rounded-full bg-indigo-100">
+                            {getTransactionIcon(selectedTransaction.type)}
+                          </div>
+                          <div className="ml-4">
+                            <h4 className="text-lg font-medium text-gray-900">
+                              {selectedTransaction.type === 'booking' && `Booking Payment`}
+                              {selectedTransaction.type === 'payout' && `Payout`}
+                              {selectedTransaction.type === 'refund' && `Refund`}
+                              {selectedTransaction.type === 'adjustment' && `Adjustment`}
+                            </h4>
+                            <p className="text-sm text-gray-500">
+                              {selectedTransaction.reference}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-lg font-semibold ${
+                            selectedTransaction.amount < 0 ? 'text-red-600' : 'text-green-600'
+                          }`}>
+                            {selectedTransaction.amount < 0 ? '-' : ''}{formatCurrency(Math.abs(selectedTransaction.amount))}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {getStatusBadge(selectedTransaction.status)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 border-t border-gray-200">
+                        <dl className="divide-y divide-gray-200">
+                          <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                            <dt className="text-sm font-medium text-gray-500">Date</dt>
+                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                              {format(new Date(selectedTransaction.date), 'MMM d, yyyy h:mm a')}
+                            </dd>
+                          </div>
+
+                          {selectedTransaction.client && (
+                            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                              <dt className="text-sm font-medium text-gray-500">Client</dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                {selectedTransaction.client}
+                              </dd>
+                            </div>
+                          )}
+
+                          {selectedTransaction.service && (
+                            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                              <dt className="text-sm font-medium text-gray-500">Service</dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                {selectedTransaction.service}
+                              </dd>
+                            </div>
+                          )}
+
+                          {selectedTransaction.method && (
+                            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                              <dt className="text-sm font-medium text-gray-500">
+                                {selectedTransaction.type === 'payout' ? 'Payout Method' : 'Payment Method'}
+                              </dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                {selectedTransaction.method === 'bank_transfer' ? 'Bank Transfer' : 'Credit Card'}
+                                {selectedTransaction.account && ` •••• ${selectedTransaction.account}`}
+                              </dd>
+                            </div>
+                          )}
+
+                          {selectedTransaction.reason && (
+                            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                              <dt className="text-sm font-medium text-gray-500">Reason</dt>
+                              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                {selectedTransaction.reason}
+                              </dd>
+                            </div>
+                          )}
+
+                          {selectedTransaction.bookingRef && (
+                            <div className="py-4 sm:grid sm:grid-cols-3 sm:gap-4">
+                              <dt className="text-sm font-medium text-gray-500">Booking Reference</dt>
+                              <dd className="mt-1 text-sm text-indigo-600 sm:mt-0 sm:col-span-2">
+                                {selectedTransaction.bookingRef}
+                              </dd>
+                            </div>
+                          )}
+                        </dl>
+                      </div>
+
+                      <div className="mt-6">
+                        <button
+                          type="button"
+                          className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          onClick={() => {
+                            // In a real app, this would download an invoice
+                            alert('Downloading invoice...');
+                          }}
+                        >
+                          <FiDownload className="w-4 h-4 mr-2" />
+                          Download Invoice
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition.Root>
+    </div>
+  );
+}
+
+// Add missing icon components
+const FiArrowUp = ({ className }) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M5 10l7-7m0 0l7 7m-7-7v18"
+    />
+  </svg>
+);
+
+const FiRefreshCw = ({ className }) => (
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+    />
+  </svg>
+);

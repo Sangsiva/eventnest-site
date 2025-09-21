@@ -1,0 +1,232 @@
+import Link from 'next/link';
+
+interface VendorProfilePageProps {
+  params: Promise<{
+    category: string;
+    location: string;
+    vendorSlug: string;
+  }>;
+}
+
+const getVendorData = async (vendorSlug: string) => {
+  try {
+    // Fetch from database API
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/vendors/${encodeURIComponent('makeup-artists')}/${encodeURIComponent('bangalore')}/${encodeURIComponent(vendorSlug)}`, {
+      cache: 'no-store'
+    })
+
+    if (!response.ok) {
+      return null
+    }
+
+    const vendor = await response.json()
+    return vendor
+  } catch (error) {
+    console.error('Error fetching vendor:', error)
+    return null
+  }
+};
+
+export default async function VendorProfilePage({ params }: VendorProfilePageProps) {
+  const resolvedParams = await params;
+  const { category, location, vendorSlug } = resolvedParams;
+  const vendor = await getVendorData(vendorSlug);
+
+  if (!vendor) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Vendor Not Found</h1>
+          <p className="text-gray-600 mb-6">The vendor you're looking for doesn't exist.</p>
+          <Link href="/vendors" className="bg-pink-600 text-white px-6 py-3 rounded-lg hover:bg-pink-700">
+            Browse Vendors
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center">
+                <h1 className="text-2xl font-bold text-pink-600">EventNest</h1>
+                <span className="ml-2 text-sm text-gray-600">India's Largest Wedding Planning Platform</span>
+              </Link>
+            </div>
+            <nav className="hidden md:flex space-x-8">
+              <Link href="/" className="text-gray-700 hover:text-pink-600 font-medium">Home</Link>
+              <Link href="/vendors" className="text-gray-700 hover:text-pink-600 font-medium">Vendors</Link>
+              <Link href="/vendor/dashboard" className="text-gray-700 hover:text-pink-600 font-medium">Dashboard</Link>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <nav className="flex text-sm text-gray-600">
+            <Link href="/" className="hover:text-pink-600">Home</Link>
+            <span className="mx-2">/</span>
+            <Link href="/vendors" className="hover:text-pink-600">Vendors</Link>
+            <span className="mx-2">/</span>
+            <Link href={`/vendor/${vendor.category?.name.toLowerCase().replace(' ', '-')}`} className="hover:text-pink-600">{vendor.category?.name}</Link>
+            <span className="mx-2">/</span>
+            <Link href={`/vendor/${vendor.category?.name.toLowerCase().replace(' ', '-')}/${vendor.location?.city.toLowerCase()}`} className="hover:text-pink-600">{vendor.location?.city}</Link>
+            <span className="mx-2">/</span>
+            <span className="text-gray-900 font-medium">{vendor.name}</span>
+          </nav>
+        </div>
+      </div>
+
+      {/* Vendor Header */}
+      <section className="bg-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Vendor Info */}
+            <div className="flex-1">
+              <div className="flex items-start gap-6">
+                <div className="w-24 h-24 bg-pink-100 rounded-full flex items-center justify-center">
+                  <span className="text-3xl">{vendor.category?.name === 'Photographers' ? '📸' : '💄'}</span>
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{vendor.name}</h1>
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="flex items-center">
+                      <span className="text-yellow-400 mr-1">⭐</span>
+                      <span className="font-semibold">{vendor.rating}</span>
+                      <span className="text-gray-600 ml-1">({vendor.reviewCount} reviews)</span>
+                    </div>
+                    <span className="text-gray-600">•</span>
+                    <span className="text-gray-600">{vendor.location?.city}</span>
+                  </div>
+                  <p className="text-gray-700 mb-4">{vendor.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                      {vendor.experience} experience
+                    </span>
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                      {vendor.eventsDone} events done
+                    </span>
+                    <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">
+                      ₹{vendor.services[0]?.price?.replace('₹', '')} starting
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Actions */}
+            <div className="lg:w-80">
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Get Quote</h3>
+                <div className="space-y-3">
+                  <button className="w-full bg-pink-600 text-white py-3 px-4 rounded-lg hover:bg-pink-700 transition-colors flex items-center justify-center gap-2">
+                    📞 Call Now
+                  </button>
+                  <button className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                    💬 WhatsApp
+                  </button>
+                  <button className="w-full border border-pink-600 text-pink-600 py-3 px-4 rounded-lg hover:bg-pink-50 transition-colors">
+                    📧 Send Inquiry
+                  </button>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-sm text-gray-600 mb-2">Starting from</p>
+                  <p className="text-2xl font-bold text-pink-600">{vendor.services[0]?.price}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold mb-6">Services Offered</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {vendor.services.map((service: any, index: number) => (
+              <div key={index} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-lg font-semibold">{service.name}</h3>
+                  <span className="text-xl font-bold text-pink-600">{service.price}</span>
+                </div>
+                <p className="text-gray-600">{service.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Portfolio Gallery */}
+      <section className="py-12 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold mb-6">Portfolio & Work Samples</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {vendor.portfolio.map((item: any) => (
+              <div key={item.id} className="relative group cursor-pointer">
+                <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:shadow-lg transition-shadow">
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">{vendor.category?.name === 'Photographers' ? '📸' : '💄'}</div>
+                    <p className="text-sm text-gray-600 px-2">{item.title}</p>
+                  </div>
+                </div>
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all rounded-lg flex items-center justify-center">
+                  <button className="bg-white text-gray-900 px-4 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                    View Image
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews Section */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {vendor.reviews.map((review: any) => (
+              <div key={review.id} className="border border-gray-200 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-pink-100 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-sm font-semibold text-pink-600">
+                        {review.customerName.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-semibold">{review.customerName}</p>
+                      <p className="text-sm text-gray-600">{review.service}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-yellow-400 mr-1">⭐</span>
+                    <span className="font-semibold">{review.rating}</span>
+                  </div>
+                </div>
+                <p className="text-gray-700 mb-3">{review.comment}</p>
+                <p className="text-sm text-gray-500">{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Recent'}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+interface VendorProfilePageProps {
+  params: Promise<{
+    category: string;
+    location: string;
+    vendorSlug: string;
+  }>;
+}

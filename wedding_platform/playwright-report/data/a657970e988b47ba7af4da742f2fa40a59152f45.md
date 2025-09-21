@@ -1,0 +1,170 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - heading "EventNest" [level=1] [ref=e8]
+          - generic [ref=e9]: Wedding and Event Planning Platform
+        - navigation [ref=e10]:
+          - link "Home" [ref=e11] [cursor=pointer]:
+            - /url: /
+          - link "Vendors" [ref=e12] [cursor=pointer]:
+            - /url: /vendors
+          - link "Blog" [ref=e13] [cursor=pointer]:
+            - /url: /blog
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - heading "Wedding and Event Planning Platform" [level=1] [ref=e20]
+        - paragraph [ref=e21]: Find & Book wedding and event services online - Photographers, Makeup Artists, Venues, Decorators & more
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - generic [ref=e24]: "8"
+            - generic [ref=e25]: Total Vendors
+          - generic [ref=e26]:
+            - generic [ref=e27]: 4.8⭐
+            - generic [ref=e28]: Average Rating
+          - generic [ref=e29]:
+            - generic [ref=e30]: 50+
+            - generic [ref=e31]: Happy Customers
+        - generic [ref=e32]:
+          - link "Browse Vendors" [ref=e33] [cursor=pointer]:
+            - /url: /vendors
+          - link "Get Started" [ref=e34] [cursor=pointer]:
+            - /url: /vendors
+      - generic [ref=e36]:
+        - generic [ref=e38]:
+          - generic [ref=e39]: 💑
+          - paragraph [ref=e40]: Tamil Wedding Couple
+          - paragraph [ref=e41]: Traditional Attire
+          - paragraph [ref=e42]: Add your wedding couple image here
+        - generic [ref=e44]: 💍
+        - generic [ref=e46]: 🌸
+    - generic [ref=e48]:
+      - heading "Vendor Categories" [level=2] [ref=e49]
+      - paragraph [ref=e50]: Find the perfect vendors for your special day
+      - generic [ref=e51]:
+        - link "📸 Photographers 4 vendors" [ref=e52] [cursor=pointer]:
+          - /url: /photographers/tamilnadu
+          - generic [ref=e53] [cursor=pointer]:
+            - generic [ref=e54] [cursor=pointer]: 📸
+            - heading "Photographers" [level=3] [ref=e55] [cursor=pointer]
+            - paragraph [ref=e56] [cursor=pointer]: 4 vendors
+        - link "💄 Makeup Artists 4 vendors" [ref=e57] [cursor=pointer]:
+          - /url: /makeup-artists/tamilnadu
+          - generic [ref=e58] [cursor=pointer]:
+            - generic [ref=e59] [cursor=pointer]: 💄
+            - heading "Makeup Artists" [level=3] [ref=e60] [cursor=pointer]
+            - paragraph [ref=e61] [cursor=pointer]: 4 vendors
+        - link "🏛️ Venues 0 vendors" [ref=e62] [cursor=pointer]:
+          - /url: /vendor/venues
+          - generic [ref=e63] [cursor=pointer]:
+            - generic [ref=e64] [cursor=pointer]: 🏛️
+            - heading "Venues" [level=3] [ref=e65] [cursor=pointer]
+            - paragraph [ref=e66] [cursor=pointer]: 0 vendors
+        - link "🎨 Decorators 0 vendors" [ref=e67] [cursor=pointer]:
+          - /url: /vendor/decorators
+          - generic [ref=e68] [cursor=pointer]:
+            - generic [ref=e69] [cursor=pointer]: 🎨
+            - heading "Decorators" [level=3] [ref=e70] [cursor=pointer]
+            - paragraph [ref=e71] [cursor=pointer]: 0 vendors
+        - link "📝 Wedding Planners 0 vendors" [ref=e72] [cursor=pointer]:
+          - /url: /vendor/wedding-planners
+          - generic [ref=e73] [cursor=pointer]:
+            - generic [ref=e74] [cursor=pointer]: 📝
+            - heading "Wedding Planners" [level=3] [ref=e75] [cursor=pointer]
+            - paragraph [ref=e76] [cursor=pointer]: 0 vendors
+        - link "🖐️ Mehendi Artists 0 vendors" [ref=e77] [cursor=pointer]:
+          - /url: /vendor/mehendi
+          - generic [ref=e78] [cursor=pointer]:
+            - generic [ref=e79] [cursor=pointer]: 🖐️
+            - heading "Mehendi Artists" [level=3] [ref=e80] [cursor=pointer]
+            - paragraph [ref=e81] [cursor=pointer]: 0 vendors
+        - link "🍽️ Caterers 0 vendors" [ref=e82] [cursor=pointer]:
+          - /url: /vendor/caterers
+          - generic [ref=e83] [cursor=pointer]:
+            - generic [ref=e84] [cursor=pointer]: 🍽️
+            - heading "Caterers" [level=3] [ref=e85] [cursor=pointer]
+            - paragraph [ref=e86] [cursor=pointer]: 0 vendors
+        - link "🎵 DJ 0 vendors" [ref=e87] [cursor=pointer]:
+          - /url: /vendor/dj
+          - generic [ref=e88] [cursor=pointer]:
+            - generic [ref=e89] [cursor=pointer]: 🎵
+            - heading "DJ" [level=3] [ref=e90] [cursor=pointer]
+            - paragraph [ref=e91] [cursor=pointer]: 0 vendors
+        - link "👗 Wedding Wear 0 vendors" [ref=e92] [cursor=pointer]:
+          - /url: /vendor/wedding-wear
+          - generic [ref=e93] [cursor=pointer]:
+            - generic [ref=e94] [cursor=pointer]: 👗
+            - heading "Wedding Wear" [level=3] [ref=e95] [cursor=pointer]
+            - paragraph [ref=e96] [cursor=pointer]: 0 vendors
+        - link "💍 Jewellery 0 vendors" [ref=e97] [cursor=pointer]:
+          - /url: /vendor/jewellery
+          - generic [ref=e98] [cursor=pointer]:
+            - generic [ref=e99] [cursor=pointer]: 💍
+            - heading "Jewellery" [level=3] [ref=e100] [cursor=pointer]
+            - paragraph [ref=e101] [cursor=pointer]: 0 vendors
+        - link "🚗 Car Rental 0 vendors" [ref=e102] [cursor=pointer]:
+          - /url: /vendor/cars
+          - generic [ref=e103] [cursor=pointer]:
+            - generic [ref=e104] [cursor=pointer]: 🚗
+            - heading "Car Rental" [level=3] [ref=e105] [cursor=pointer]
+            - paragraph [ref=e106] [cursor=pointer]: 0 vendors
+        - link "🙏 Pandit 0 vendors" [ref=e107] [cursor=pointer]:
+          - /url: /vendor/pandit
+          - generic [ref=e108] [cursor=pointer]:
+            - generic [ref=e109] [cursor=pointer]: 🙏
+            - heading "Pandit" [level=3] [ref=e110] [cursor=pointer]
+            - paragraph [ref=e111] [cursor=pointer]: 0 vendors
+    - generic [ref=e113]:
+      - heading "Planning a Wedding Made Easy" [level=2] [ref=e114]
+      - paragraph [ref=e115]: Get quotes from multiple vendors, compare prices, and book your perfect wedding and event services
+      - generic [ref=e116]:
+        - link "Get Started" [ref=e117] [cursor=pointer]:
+          - /url: /vendors
+        - link "Browse Vendors" [ref=e118] [cursor=pointer]:
+          - /url: /vendors
+    - contentinfo [ref=e119]:
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - generic [ref=e122]:
+            - heading "EventNest" [level=3] [ref=e123]
+            - paragraph [ref=e124]: India's largest wedding and event planning platform connecting couples with the best vendors.
+          - generic [ref=e125]:
+            - heading "Services" [level=4] [ref=e126]
+            - list [ref=e127]:
+              - listitem [ref=e128]:
+                - link "Photographers" [ref=e129] [cursor=pointer]:
+                  - /url: /vendor/photographers
+              - listitem [ref=e130]:
+                - link "Venues" [ref=e131] [cursor=pointer]:
+                  - /url: /vendor/venues
+              - listitem [ref=e132]:
+                - link "Makeup Artists" [ref=e133] [cursor=pointer]:
+                  - /url: /vendor/makeup-artists
+              - listitem [ref=e134]:
+                - link "Decorators" [ref=e135] [cursor=pointer]:
+                  - /url: /vendor/decorators
+          - generic [ref=e136]:
+            - heading "Support" [level=4] [ref=e137]
+            - list [ref=e138]:
+              - listitem [ref=e139]:
+                - link "Contact Us" [ref=e140] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e141]:
+                - link "FAQ" [ref=e142] [cursor=pointer]:
+                  - /url: /faq
+              - listitem [ref=e143]:
+                - link "Blog" [ref=e144] [cursor=pointer]:
+                  - /url: /blog
+          - generic [ref=e145]:
+            - heading "Download App" [level=4] [ref=e146]
+            - paragraph [ref=e147]: Get the EventNest app for better experience
+            - generic [ref=e148]:
+              - generic [ref=e149]: App Store
+              - generic [ref=e150]: Google Play
+        - paragraph [ref=e152]: © 2024 EventNest. All rights reserved.
+  - alert [ref=e153]
+```

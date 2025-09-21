@@ -1,0 +1,126 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e6]:
+        - link "EventNest Wedding and Event Planning Platform" [ref=e8] [cursor=pointer]:
+          - /url: /
+          - heading "EventNest" [level=1] [ref=e9] [cursor=pointer]
+          - generic [ref=e10] [cursor=pointer]: Wedding and Event Planning Platform
+        - navigation [ref=e11]:
+          - link "Home" [ref=e12] [cursor=pointer]:
+            - /url: /
+          - link "Vendors" [ref=e13] [cursor=pointer]:
+            - /url: /vendors
+    - navigation [ref=e16]:
+      - link "Home" [ref=e17] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e18]: /
+      - link "Vendors" [ref=e19] [cursor=pointer]:
+        - /url: /vendors
+      - generic [ref=e20]: /
+      - generic [ref=e21]: Makeup Artists
+      - generic [ref=e22]: /
+      - generic [ref=e23]: Tamilnadu
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - heading "Makeup Artists in Tamilnadu" [level=1] [ref=e28]
+        - paragraph [ref=e29]: Find professional makeup artists. Compare portfolios, packages, and reviews.
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - generic [ref=e32]: "0"
+            - generic [ref=e33]: Makeup Artists
+          - generic [ref=e34]:
+            - generic [ref=e35]: 4.7⭐
+            - generic [ref=e36]: Average Rating
+          - generic [ref=e37]:
+            - generic [ref=e38]: 10K-18K
+            - generic [ref=e39]: Price Range
+      - generic [ref=e41]: 💄
+    - generic [ref=e44]:
+      - generic [ref=e45]:
+        - generic [ref=e46]:
+          - generic [ref=e47]: "Sort by:"
+          - combobox [ref=e48]:
+            - option "Rating" [selected]
+            - 'option "Price: Low to High"'
+            - 'option "Price: High to Low"'
+            - option "Experience"
+            - option "Most Reviews"
+        - generic [ref=e49]:
+          - generic [ref=e50]: "Style:"
+          - combobox [ref=e51]:
+            - option "All Styles" [selected]
+            - option "Bridal"
+            - option "Traditional"
+            - option "Modern"
+            - option "HD"
+        - generic [ref=e52]:
+          - generic [ref=e53]: "Package:"
+          - combobox [ref=e54]:
+            - option "All Packages" [selected]
+            - option "Basic (₹8K-12K)"
+            - option "Premium (₹12K-16K)"
+            - option "Luxury (₹16K+)"
+        - generic [ref=e55]:
+          - generic [ref=e56]: "Location:"
+          - combobox [ref=e57]:
+            - option "All Locations" [selected]
+            - option "Chennai"
+            - option "Coimbatore"
+            - option "Madurai"
+            - option "Tiruchirappalli"
+            - option "Tirupur"
+            - option "Erode"
+            - option "Karur"
+            - option "Salem"
+      - generic [ref=e58]:
+        - textbox "Search makeup artists..." [ref=e59]
+        - button "Search" [ref=e60] [cursor=pointer]
+    - generic [ref=e62]:
+      - generic [ref=e63]:
+        - heading "Featured Makeup Artists" [level=2] [ref=e64]
+        - generic [ref=e65]: 0 makeup artists found
+      - button "Load More Makeup Artists" [ref=e67] [cursor=pointer]
+    - generic [ref=e69]:
+      - heading "Why Choose EventNest Makeup Artists?" [level=2] [ref=e70]
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - generic [ref=e73]: 💄
+          - heading "Professional Portfolio" [level=3] [ref=e74]
+          - paragraph [ref=e75]: Browse extensive portfolios and previous bridal looks
+        - generic [ref=e76]:
+          - generic [ref=e77]: 🎨
+          - heading "Multiple Styles" [level=3] [ref=e78]
+          - paragraph [ref=e79]: From traditional to modern, find makeup artists that match your style
+        - generic [ref=e80]:
+          - generic [ref=e81]: 📅
+          - heading "Flexible Packages" [level=3] [ref=e82]
+          - paragraph [ref=e83]: Choose from various packages based on your budget and requirements
+    - generic [ref=e85]:
+      - heading "Explore Other Wedding Services" [level=2] [ref=e86]
+      - generic [ref=e87]:
+        - link "📸 Photographers 24,579 vendors" [ref=e88] [cursor=pointer]:
+          - /url: /photographers/tamilnadu
+          - generic [ref=e89] [cursor=pointer]: 📸
+          - heading "Photographers" [level=3] [ref=e90] [cursor=pointer]
+          - paragraph [ref=e91] [cursor=pointer]: 24,579 vendors
+        - link "🏛️ Venues 48,234 vendors" [ref=e92] [cursor=pointer]:
+          - /url: /vendor/venues
+          - generic [ref=e93] [cursor=pointer]: 🏛️
+          - heading "Venues" [level=3] [ref=e94] [cursor=pointer]
+          - paragraph [ref=e95] [cursor=pointer]: 48,234 vendors
+        - link "🎨 Decorators 3,449 vendors" [ref=e96] [cursor=pointer]:
+          - /url: /vendor/decorators
+          - generic [ref=e97] [cursor=pointer]: 🎨
+          - heading "Decorators" [level=3] [ref=e98] [cursor=pointer]
+          - paragraph [ref=e99] [cursor=pointer]: 3,449 vendors
+        - link "📝 Wedding Planners 3,522 vendors" [ref=e100] [cursor=pointer]:
+          - /url: /vendor/wedding-planners
+          - generic [ref=e101] [cursor=pointer]: 📝
+          - heading "Wedding Planners" [level=3] [ref=e102] [cursor=pointer]
+          - paragraph [ref=e103] [cursor=pointer]: 3,522 vendors
+  - alert [ref=e104]
+```
