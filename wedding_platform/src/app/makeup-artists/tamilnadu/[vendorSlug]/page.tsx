@@ -245,7 +245,7 @@ export default function VendorProfilePage({ params }: { params: { vendorSlug: st
                 <h3 className="text-xl font-semibold mb-4">{pkg.name}</h3>
                 <div className="text-3xl font-bold text-pink-600 mb-4">{pkg.price}</div>
                 <ul className="space-y-2 mb-6">
-                  {pkg.features.map((feature, idx) => (
+                  {pkg.features.map((feature: string, idx: number) => (
                     <li key={idx} className="flex items-center">
                       <span className="text-green-500 mr-2">✓</span>
                       <span className="text-sm">{feature}</span>
