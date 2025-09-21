@@ -231,7 +231,7 @@ export default function VendorProfilePage({ params }: { params: { vendorSlug: st
           <h2 className="text-3xl font-bold text-center mb-8">Services & Packages</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {vendor.services.map((service, index) => (
+            {vendor.services.map((service: any, index: number) => (
               <div key={index} className="bg-gray-50 rounded-lg p-6 text-center">
                 <div className="text-4xl mb-4">📸</div>
                 <h3 className="text-lg font-semibold mb-2">{service.name || service}</h3>
@@ -240,12 +240,12 @@ export default function VendorProfilePage({ params }: { params: { vendorSlug: st
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {vendor.packages && vendor.packages.map((pkg, index) => (
+            {vendor.packages && vendor.packages.map((pkg: any, index: number) => (
               <div key={index} className="border border-gray-200 rounded-lg p-6">
                 <h3 className="text-xl font-semibold mb-4">{pkg.name}</h3>
                 <div className="text-3xl font-bold text-pink-600 mb-4">{pkg.price}</div>
                 <ul className="space-y-2 mb-6">
-                  {pkg.features.map((feature, idx) => (
+                  {pkg.features.map((feature: string, idx: number) => (
                     <li key={idx} className="flex items-center">
                       <span className="text-green-500 mr-2">✓</span>
                       <span className="text-sm">{feature}</span>
@@ -266,7 +266,7 @@ export default function VendorProfilePage({ params }: { params: { vendorSlug: st
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-8">Portfolio</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {vendor.portfolio.map((item) => (
+            {vendor.portfolio.map((item: any) => (
               <div key={item.id} className="group cursor-pointer">
                 <div className="relative overflow-hidden rounded-lg">
                   <img 
