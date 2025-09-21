@@ -231,7 +231,7 @@ export default function VendorProfilePage({ params }: { params: { vendorSlug: st
           <h2 className="text-3xl font-bold text-center mb-8">Services & Packages</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {vendor.services.map((service: any, index) => (
+            {vendor.services.map((service: any, index: number) => (
               <div key={index} className="bg-gray-50 rounded-lg p-6 text-center">
                 <div className="text-4xl mb-4">💄</div>
                 <h3 className="text-lg font-semibold mb-2">{service.name || service}</h3>
