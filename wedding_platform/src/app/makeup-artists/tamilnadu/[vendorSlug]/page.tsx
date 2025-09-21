@@ -7,7 +7,7 @@ export default function VendorProfilePage({ params }: { params: { vendorSlug: st
   const { vendorSlug } = params;
   const [vendor, setVendor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [showTestMessage, setShowTestMessage] = useState(false);
@@ -22,7 +22,7 @@ export default function VendorProfilePage({ params }: { params: { vendorSlug: st
         const data = await response.json();
         setVendor(data);
       } catch (err) {
-        setError(err.message);
+        setError(String(err));
       } finally {
         setLoading(false);
       }
