@@ -6,12 +6,12 @@ const prisma = new PrismaClient()
 export async function GET(request: NextRequest, { params }: { params: { vendor: string } }) {
   try {
     const vendor = await prisma.vendor.findUnique({
-      where: { id: params.vendor },
+      where: { slug: params.vendor },
       include: {
         category: true,
         location: true,
         services: true,
-        // packages: true, // Temporarily commented out to debug
+        packages: true,
         reviews: true,
         portfolio: true
       }

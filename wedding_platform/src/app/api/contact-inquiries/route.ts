@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
       console.error('Database error when fetching all vendors:', dbError)
     }
 
-    // Find the vendor by ID to get vendor details
+    // Find the vendor by slug to get vendor details
     const vendor = await prisma.vendor.findUnique({
-      where: { id: vendorSlug },
+      where: { slug: vendorSlug },
       select: {
         id: true,
         name: true,
